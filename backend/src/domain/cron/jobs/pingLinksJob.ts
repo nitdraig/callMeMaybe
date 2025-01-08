@@ -5,7 +5,7 @@ import LinkModel from "../../links/models/linkModels";
 // Función principal del job
 const pingLinksJob = () => {
   // Programa el cron job para ejecutarse cada 15 minutos
-  cron.schedule("*/15 * * * *", async () => {
+  cron.schedule("*/10 * * * *", async () => {
     console.log("PingLinksJob: Comenzando a verificar URLs...");
 
     try {
@@ -35,7 +35,7 @@ const pingLinksJob = () => {
   });
 
   console.log(
-    "PingLinksJob: Cron job programado para ejecutarse cada 15 minutos."
+    "PingLinksJob: Cron job programado para ejecutarse cada 10 minutos."
   );
 };
 

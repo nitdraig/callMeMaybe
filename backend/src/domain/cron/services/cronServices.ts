@@ -3,7 +3,7 @@ import axios from "axios";
 import { User } from "../../auth/models/userModel";
 
 const startCronJob = () => {
-  cron.schedule("*/15 * * * *", async () => {
+  cron.schedule("*/10 * * * *", async () => {
     console.log("Ejecutando ping a URLs...");
     const users = await User.find();
 
