@@ -10,14 +10,20 @@ declare global {
   }
 }
 
+// Middleware de autenticación
 export const authenticate = (
   req: Request,
   res: Response,
   next: NextFunction
-): any => {
-  const token = req.header("Authorization")?.replace("Bearer ", "");
+): void => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader?.startsWith("Bearer ")
+    ? authHeader.slice(7)
+    : undefined;
+
   if (!token) {
-    return res.status(401).json({ message: "Unauthorized" });
+    res.status(401).json({ message: "Unauthorized" });
+    return;
   }
 
   try {
@@ -35,10 +41,13 @@ export const authenticate = (
 // Middleware de autorización
 export const authorize =
   (roles: string[]) =>
-  (req: Request, res: Response, next: NextFunction): any => {
+  (req: Request, res: Response, next: NextFunction): void => {
     const user = req.user;
+
     if (!user || !roles.includes(user.role)) {
-      return res.status(403).json({ message: "Forbidden" });
+      res.status(403).json({ message: "Forbidden" });
+      return;
     }
+
     next();
   };

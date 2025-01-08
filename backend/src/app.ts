@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import express, { Response } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import swaggerUi from "swagger-ui-express";
@@ -23,7 +23,7 @@ app.use("/auth", authRoutes);
 app.use("/links", linkRoutes);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-app.get("/", (req: Request, res: Response) => {
+app.get("/", (_req, res: Response) => {
   res.send(`
     <!DOCTYPE html>
     <html lang="en">
@@ -84,4 +84,5 @@ app.get("/", (req: Request, res: Response) => {
     </html>
   `);
 });
+
 export default app;

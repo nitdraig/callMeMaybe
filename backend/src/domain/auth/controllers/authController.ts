@@ -6,7 +6,34 @@ import {
   resetPassword,
 } from "../services/authService";
 
-export const register = async (req: Request, res: Response) => {
+// Definir los tipos esperados de req.body para cada controlador
+interface RegisterBody {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  role: any;
+}
+
+interface LoginBody {
+  email: string;
+  password: string;
+}
+
+interface PasswordResetBody {
+  email: string;
+}
+
+interface ResetPasswordBody {
+  token: string;
+  newPassword: string;
+}
+
+// Controlador para registrar usuario
+export const register = async (
+  req: Request<{}, {}, RegisterBody>,
+  res: Response
+) => {
   const { firstName, lastName, email, password, role } = req.body;
   try {
     await registerUser(firstName, lastName, email, password, role);
@@ -16,7 +43,8 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
-export const login = async (req: Request, res: Response) => {
+// Controlador para iniciar sesión
+export const login = async (req: Request<{}, {}, LoginBody>, res: Response) => {
   const { email, password } = req.body;
   try {
     const token = await loginUser(email, password);
@@ -26,7 +54,11 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-export const requestPasswordReset = async (req: Request, res: Response) => {
+// Controlador para solicitar el reseteo de contraseña
+export const requestPasswordReset = async (
+  req: Request<{}, {}, PasswordResetBody>,
+  res: Response
+) => {
   const { email } = req.body;
   try {
     const resetToken = await generateResetToken(email);
@@ -38,7 +70,11 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
   }
 };
 
-export const resetPasswordHandler = async (req: Request, res: Response) => {
+// Controlador para resetear la contraseña
+export const resetPasswordHandler = async (
+  req: Request<{}, {}, ResetPasswordBody>,
+  res: Response
+) => {
   const { token, newPassword } = req.body;
   try {
     await resetPassword(token, newPassword);

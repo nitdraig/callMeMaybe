@@ -1,7 +1,15 @@
 import { Request, Response } from "express";
 import LinkModel from "../models/linkModels";
-import { User } from "../../auth/models/userModel";
 import mongoose from "mongoose";
+
+// Declarar la extensión del tipo Request para incluir "user"
+declare global {
+  namespace Express {
+    interface Request {
+      user?: { id: string; role: string };
+    }
+  }
+}
 
 export const addLink = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -25,8 +33,8 @@ export const addLink = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export const getLinks = async (req: Request, res: Response): Promise<any> => {
-  const userId = (req as any).user.id;
+export const getLinks = async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id;
   const { page = 1, limit = 10 } = req.query; // Parámetros de paginación (con valores por defecto)
 
   try {
@@ -35,9 +43,10 @@ export const getLinks = async (req: Request, res: Response): Promise<any> => {
       .limit(parseInt(limit as string)); // Limita el número de enlaces por página
 
     if (links.length === 0) {
-      return res
+      res
         .status(404)
         .json({ error: "No se encontraron enlaces para este usuario" });
+      return;
     }
 
     res.json({ links });
@@ -47,25 +56,31 @@ export const getLinks = async (req: Request, res: Response): Promise<any> => {
   }
 };
 
-export const updateLink = async (req: Request, res: Response): Promise<any> => {
+export const updateLink = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { id } = req.params; // ID del link a actualizar
     const { url } = req.body; // URL nueva del link
 
     if (!url) {
-      return res.status(400).json({ message: "URL is required" });
+      res.status(400).json({ message: "URL is required" });
+      return;
     }
 
     const link = await LinkModel.findById(id);
     if (!link) {
-      return res.status(404).json({ message: "Link not found" });
+      res.status(404).json({ message: "Link not found" });
+      return;
     }
 
     // Verificar que el usuario que hace la solicitud es el propietario del enlace
     if (link.userId.toString() !== req.user?.id) {
-      return res.status(403).json({
+      res.status(403).json({
         message: "Forbidden: You are not authorized to update this link",
       });
+      return;
     }
 
     link.url = url; // Actualizar la URL del link
@@ -77,22 +92,32 @@ export const updateLink = async (req: Request, res: Response): Promise<any> => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-export const deleteLink = async (req: Request, res: Response): Promise<any> => {
+
+export const deleteLink = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { id } = req.params;
+
+    // Verificar si el ID es válido
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid link ID" });
+      res.status(400).json({ message: "Invalid link ID" });
+      return;
     }
 
     const link = await LinkModel.findById(id);
     if (!link) {
-      return res.status(404).json({ message: "Link not found" });
+      res.status(404).json({ message: "Link not found" });
+      return;
     }
 
+    // Verificar que el usuario que hace la solicitud es el propietario del enlace
     if (link.userId.toString() !== req.user?.id) {
-      return res.status(403).json({
+      res.status(403).json({
         message: "Forbidden: You are not authorized to delete this link",
       });
+      return;
     }
 
     await link.deleteOne();
